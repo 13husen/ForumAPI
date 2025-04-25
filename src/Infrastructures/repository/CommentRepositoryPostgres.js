@@ -30,6 +30,8 @@ class CommentRepositoryPostgres extends CommentRepository {
     const result = await this._pool.query(query);
     if (!result.rowCount) {
       throw new NotFoundError('comment tidak ditemukan di database');
+    } else {
+      return true;
     }
   }
   
@@ -41,6 +43,8 @@ class CommentRepositoryPostgres extends CommentRepository {
     const result = await this._pool.query(query);
     if (!result.rowCount || result.rows[0].owner !== ownerId) {
       throw new AuthorizationError('anda bukan pemiliki comment ini');
+    }else {
+      return true;
     }
   }
   

@@ -4,7 +4,7 @@ const NotFoundError = require('../../../Commons/exceptions/NotFoundError');
 const AuthorizationError = require('../../../Commons/exceptions/AuthorizationError');
 
 describe('CommentRepositoryPostgres integration test', () => {
-  const idGenerator = () => '123'; 
+  const idGenerator = () => '123';
   const repository = new CommentRepositoryPostgres(pool, idGenerator);
 
   beforeAll(async () => {
@@ -44,9 +44,10 @@ describe('CommentRepositoryPostgres integration test', () => {
     it('should throw NotFoundError if comment not exist', async () => {
       await expect(repository.verifyCommentExists('not-found')).rejects.toThrow(NotFoundError);
     });
-    it('should not throw error if comment exists', async () => {
-      await repository.addComment({ content: 'abc' }, 'thread-123', 'user-123');
-      await expect(repository.verifyCommentExists('comment-123')).resolves.toBeUndefined();
+    it('should not throw NotFoundError and return true if comment exists', async () => {
+      let {id} = await repository.addComment({ content: 'abc' }, 'thread-123', 'user-123');
+      const result = await repository.verifyCommentExists(id);
+      expect(result).toBe(true);
     });
   });
 
@@ -57,10 +58,10 @@ describe('CommentRepositoryPostgres integration test', () => {
       await expect(repository.verifyCommentOwner('comment-123', 'user-456')).rejects.toThrow(AuthorizationError);
     });
 
-    it('should not throw if owner matched', async () => {
-      await repository.addComment({ content: 'abc' }, 'thread-123', 'user-123');
-
-      await expect(repository.verifyCommentOwner('comment-123', 'user-123')).resolves.not.toThrow();
+    it('should not throw if owner matched and return true if comment owner', async () => {
+      let {id} = await repository.addComment({ content: 'abc' }, 'thread-123', 'user-123');
+      const result = await repository.verifyCommentOwner(id, 'user-123');
+      expect(result).toBe(true);
     });
   });
 

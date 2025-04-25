@@ -1,6 +1,7 @@
 const AddReplyUseCase = require("../AddReplyUseCase");
 const AddReply = require("../../../Domains/replies/entities/AddReply");
 const AddedReply = require("../../../Domains/replies/entities/AddedReply");
+const NotFoundError = require("../../../Commons/exceptions/NotFoundError");
 
 describe("AddReplyUseCase", () => {
   it("should orchestrate the add reply action correctly", async () => {
@@ -28,7 +29,7 @@ describe("AddReplyUseCase", () => {
       verifyThreadExists: jest.fn(() => Promise.resolve()),
     };
     const mockCommentRepository = {
-      verifyCommentExists: jest.fn(() => Promise.resolve()),
+      verifyCommentExists: jest.fn(() => Promise.resolve(true)),
     };
     const mockReplyRepository = {
       addReply: jest.fn(() => Promise.resolve(fakeAddedReply)),
@@ -108,7 +109,7 @@ describe("AddReplyUseCase", () => {
     };
     const mockCommentRepository = {
       verifyCommentExists: jest.fn(() =>
-        Promise.reject(new Error("Comment not found"))
+        Promise.reject(new NotFoundError('comment tidak ditemukan di database'))
       ),
     };
     const mockReplyRepository = {
@@ -123,8 +124,9 @@ describe("AddReplyUseCase", () => {
 
     // Act & Assert
     await expect(addReplyUseCase.execute(useCasePayload)).rejects.toThrowError(
-      "Comment not found"
+      "comment tidak ditemukan di database"
     );
+    
     expect(mockThreadRepository.verifyThreadExists).toBeCalledWith(
       "thread-123"
     );

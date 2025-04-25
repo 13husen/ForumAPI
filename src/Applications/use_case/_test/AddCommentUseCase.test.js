@@ -9,7 +9,11 @@ describe("AddCommentUseCase", () => {
 
   beforeEach(() => {
     commentRepository = {
-      addComment: jest.fn(),
+      addComment: jest.fn(() => ({
+        id: "comment-123",
+        content: "This is a new comment",
+        owner: "user-123",
+      }))
     };
     threadRepository = {
       verifyThreadExists: jest.fn(),
@@ -34,8 +38,6 @@ describe("AddCommentUseCase", () => {
       };
 
       threadRepository.verifyThreadExists.mockResolvedValue();
-
-      commentRepository.addComment.mockResolvedValue(expectedComment);
 
       // Act
       const result = await addCommentUseCase.execute(

@@ -76,6 +76,7 @@ describe("GetThreadDetailUseCase", () => {
       expect(threadRepository.getCommentsByThreadId).toHaveBeenCalledWith(
         threadId
       );
+      expect(replyRepository.getRepliesByCommentIds).toBeCalledTimes(1)
       expect(result).toEqual({
         id: "thread-123",
         title: "Thread Title",
@@ -126,6 +127,7 @@ describe("GetThreadDetailUseCase", () => {
       await expect(
         getThreadDetailUseCase.execute(threadId)
       ).rejects.toThrowError(NotFoundError);
+      expect(threadRepository.getThreadById).toHaveBeenCalledWith(threadId);
     });
 
     it("should throw NotFoundError if comments are not found", async () => {
@@ -162,6 +164,11 @@ describe("GetThreadDetailUseCase", () => {
       const result = await getThreadDetailUseCase.execute(threadId);
 
       // Assert
+      expect(threadRepository.getThreadById).toHaveBeenCalledWith(threadId);
+      expect(threadRepository.getCommentsByThreadId).toHaveBeenCalledWith(
+        threadId
+      );
+      expect(replyRepository.getRepliesByCommentIds).toBeCalledTimes(1)
       expect(result.comments).toEqual([]);
     });
 
@@ -218,6 +225,11 @@ describe("GetThreadDetailUseCase", () => {
       const result = await getThreadDetailUseCase.execute(threadId);
 
       // Assert
+      expect(threadRepository.getThreadById).toHaveBeenCalledWith(threadId);
+      expect(threadRepository.getCommentsByThreadId).toHaveBeenCalledWith(
+        threadId
+      );
+      expect(replyRepository.getRepliesByCommentIds).toBeCalledTimes(1)
       expect(result.comments).toHaveLength(2);
 
       // Comment with replies
@@ -274,6 +286,11 @@ describe("GetThreadDetailUseCase", () => {
       const result = await getThreadDetailUseCase.execute(threadId);
 
       // Assert
+      expect(threadRepository.getThreadById).toHaveBeenCalledWith(threadId);
+      expect(threadRepository.getCommentsByThreadId).toHaveBeenCalledWith(
+        threadId
+      );
+      expect(replyRepository.getRepliesByCommentIds).toBeCalledTimes(1)
       expect(result.comments[0].replies[0].content).toEqual(
         "**balasan telah dihapus**"
       );

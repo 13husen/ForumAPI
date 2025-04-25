@@ -11,7 +11,7 @@ class ReplyRepositoryPostgres extends ReplyRepository {
   }
 
   async addReply(payload) {
-    const { content, commentId, owner, is_delete = false, replyId = "" } = payload;
+    const { content, commentId, owner, is_delete = false, replyId = ""} = payload;
     const id = replyId ? replyId :  `reply-${this._idGenerator()}`;
     const date = new Date().toISOString();
 
@@ -32,6 +32,8 @@ class ReplyRepositoryPostgres extends ReplyRepository {
     );
     if (!result.rowCount) {
       throw new NotFoundError("Reply tidak ditemukan");
+    }else {
+      return true;
     }
   }
 
@@ -46,6 +48,8 @@ class ReplyRepositoryPostgres extends ReplyRepository {
     if (result.rows[0].owner !== owner) {
       throw new AuthorizationError("Anda tidak berhak mengakses resource ini");
     }
+
+    return true;
   }
 
   async deleteReplyById(replyId) {

@@ -77,11 +77,10 @@ describe("ReplyRepositoryPostgres", () => {
         commentId: "comment-123",
         owner: "user-123",
       };
-      await replyRepository.addReply(payload);
 
-      await expect(
-        replyRepository.verifyReplyExists("reply-123")
-      ).resolves.not.toThrowError();
+      let {id} = await replyRepository.addReply(payload);
+      const result = await replyRepository.verifyReplyExists(id);
+      expect(result).toBe(true);
     });
   });
 
@@ -109,9 +108,9 @@ describe("ReplyRepositoryPostgres", () => {
       };
       await replyRepository.addReply(payload);
 
-      await expect(
-        replyRepository.verifyReplyOwner("reply-123", "user-123")
-      ).resolves.not.toThrowError();
+      await expect(replyRepository.verifyReplyOwner("reply-123", "user-123"))
+      .resolves
+      .toBe(true);
     });
 
     it("should throw NotFoundError if reply does not exist", async () => {
@@ -202,19 +201,25 @@ describe("ReplyRepositoryPostgres", () => {
 
       // Assert
       expect(replies).toHaveLength(2);
-      const sortedReplies = [...replies].sort((a, b) => a.id.localeCompare(b.id));
-
-      expect(sortedReplies[0]).toEqual(expect.objectContaining({
-        content: "Balasan satu",
-        comment_id: "commentreplies-123",
-        username: "dicodingreplies",
-        is_delete: false,
-      }));
-      expect(sortedReplies[1]).toEqual(expect.objectContaining({
-        content: "Balasan dua",
-        is_delete: true,
-      }));
+      expect(replies).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          content: "Balasan dua",
+          is_delete: true,
+          comment_id: "commentreplies-123",
+          username: "dicodingreplies",
+          id: "reply-112"
+        }),
+        expect.objectContaining({
+          content: "Balasan satu",
+          comment_id: "commentreplies-123",
+          username: "dicodingreplies",
+          is_delete: false,
+          id: "reply-111"
+        })
+      ]));
+      expect(replies[0].date).toBeDefined()
+      expect(replies[1].date).toBeDefined()
     });
-    
+
   });
 });

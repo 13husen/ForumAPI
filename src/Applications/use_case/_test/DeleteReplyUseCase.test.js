@@ -19,8 +19,8 @@ describe('DeleteReplyUseCase', () => {
   it('should orchestrate the delete reply action correctly', async () => {
     const payload = { replyId: 'reply-123', owner: 'user-123' };
 
-    replyRepository.verifyReplyExists.mockResolvedValue();
-    replyRepository.verifyReplyOwner.mockResolvedValue();
+    replyRepository.verifyReplyExists.mockResolvedValue(true);
+    replyRepository.verifyReplyOwner.mockResolvedValue(true);
     replyRepository.deleteReplyById.mockResolvedValue();
 
     await useCase.execute(payload);

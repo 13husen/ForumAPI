@@ -28,8 +28,8 @@ describe('DeleteCommentUseCase', () => {
     const payload = { threadId: 'thread-123', commentId: 'comment-123', owner: 'user-123' };
 
     threadRepository.verifyThreadExists.mockResolvedValue();
-    commentRepository.verifyCommentExists.mockResolvedValue();
-    commentRepository.verifyCommentOwner.mockResolvedValue();
+    commentRepository.verifyCommentExists.mockResolvedValue(true);
+    commentRepository.verifyCommentOwner.mockResolvedValue(true);
     commentRepository.deleteCommentById.mockResolvedValue();
 
     await useCase.execute(payload);
@@ -71,7 +71,7 @@ describe('DeleteCommentUseCase', () => {
     const payload = { threadId: 'thread-123', commentId: 'comment-123', owner: 'user-123' };
 
     threadRepository.verifyThreadExists.mockResolvedValue();
-    commentRepository.verifyCommentExists.mockResolvedValue();
+    commentRepository.verifyCommentExists.mockResolvedValue(true);
     commentRepository.verifyCommentOwner.mockRejectedValue(new AuthorizationError('Not the owner'));
 
     await expect(useCase.execute(payload)).rejects.toThrow(AuthorizationError);
