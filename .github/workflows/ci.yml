@@ -17,8 +17,9 @@ jobs:
       postgres:
         image: postgres
         env:
+          POSTGRES_HOST: forum-api.cmf0aog8mvir.us-east-1.rds.amazonaws.com
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: root
+          POSTGRES_PASSWORD: developer
           POSTGRES_DB: dicoding_app
         options: >-
           --health-cmd pg_isready
@@ -58,8 +59,8 @@ jobs:
           CI: true
           HOST: localhost
           PORT: 3000
-          PGHOST: localhost
+          PGHOST: forum-api.cmf0aog8mvir.us-east-1.rds.amazonaws.com
           PGPORT: 5432
           PGUSER: postgres
-          PGPASSWORD: root
+          PGPASSWORD: developer
           PGDATABASE: dicoding_app_test
