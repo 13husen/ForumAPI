@@ -41,9 +41,12 @@ jobs:
           done
       - name: Install dependencies
         run: |
+          rm -rf node_modules package-lock.json
           npm install
+          npm install pg --no-save
       - name: migrate and test
         run: |
+          npm install node-pg-migrate --no-save
           npx node-pg-migrate up
           npm run test
         env:
