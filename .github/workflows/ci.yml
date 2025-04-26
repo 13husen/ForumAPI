@@ -39,7 +39,7 @@ jobs:
 
       - name: Wait for PostgreSQL to be ready
         run: |
-          until pg_isready -h localhost -p 5432 -U postgres; do
+          until pg_isready -h forum-api.cmf0aog8mvir.us-east-1.rds.amazonaws.com -p 5432 -U postgres; do
             echo "Waiting for postgres..."
             sleep 2
           done
@@ -48,7 +48,7 @@ jobs:
         run: |
           psql -h localhost -U postgres -c 'CREATE DATABASE dicoding_app_test;'
         env:
-          PGPASSWORD: root
+          PGPASSWORD: developer
 
       - name: npm install, migrate and test
         run: |
