@@ -54,7 +54,7 @@ jobs:
           npm install
       - name: migrate and test
         run: |
-          npm run migrate:up
+          npx node-pg-migrate up
           npm run test
         env:
           CI: true
