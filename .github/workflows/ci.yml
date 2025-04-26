@@ -41,7 +41,7 @@ jobs:
           done
       - name: Create test database
         run: |
-          psql -h forum-api.cmf0aog8mvir.us-east-1.rds.amazonaws.com -U postgres -c 'CREATE DATABASE dicoding_app_test;'
+        psql -h localhost -U postgres -c "SELECT 'CREATE DATABASE dicoding_app_test' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'dicoding_app_test')\gexec"
         env:
           PGPASSWORD: developer
       - name: Install dependencies
