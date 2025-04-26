@@ -107,7 +107,6 @@ describe('/threads/{threadId}/comments endpoint', () => {
         owner: decodedToken,
       });
 
-
       const { comment_id } = await CommentsTableTestHelper.addComment({
         content: 'komentar saya',
         threadId: thread_id,
