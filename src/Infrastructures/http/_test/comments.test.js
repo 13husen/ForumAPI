@@ -144,7 +144,6 @@ describe('/threads/{threadId}/comments endpoint', () => {
         threadId: thread_id,
         ownerId: userA,
       });
-
       const response = await server.inject({
         method: 'DELETE',
         url: `/threads/${thread_id}/comments/${comment_id}`,
