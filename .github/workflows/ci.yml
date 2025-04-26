@@ -68,7 +68,6 @@ jobs:
         run: |
           npm run migrate:test up
           npm run test
-          pm2 restart auth-api
         env:
           CI: true
           HOST: localhost
