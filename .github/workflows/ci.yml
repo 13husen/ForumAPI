@@ -51,8 +51,8 @@ jobs:
           PGPASSWORD: developer
       - name: Install dependencies
         run: |
-          npm ci          
-      - name: npm install, migrate and test
+          npm install
+      - name: migrate and test
         run: |
           npm run migrate:up
           npm run test
