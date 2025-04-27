@@ -1,6 +1,7 @@
 const pool = require('../../database/postgres/pool');
 const ThreadsTableTestHelper = require('../../../../tests/ThreadsTableTestHelper');
 const UsersTableTestHelper = require('../../../../tests/UsersTableTestHelper');
+const CommentsTableTestHelper = require('../../../../tests/CommentsTableTestHelper');
 const createServer = require('../createServer');
 const container = require('../../container');
 const ServerTestHelper = require('../../../../tests/ServerTestHelper');
@@ -142,7 +143,99 @@ describe('/threads endpoint', () => {
       const responseJson = JSON.parse(response.payload);
       expect(response.statusCode).toEqual(404);
       expect(responseJson.status).toEqual('fail');
-      expect(responseJson.message).toEqual('Thread tidak ditemukan');
+      expect(responseJson.message).toEqual('threads tidak ditemukan di database');
+    });
+  });
+
+  describe('when PUT /threads/{threadId}/comments/{commentId}/likes', () => {
+    it('should response 200 and toggle like successfully', async () => {
+      const accessToken = await ServerTestHelper.getAccessToken({ username: 'liker', password: 'passliker', fullname: 'Liker User' });
+      const user = await ServerTestHelper.decodeAccessToken(accessToken);
+      const server = await createServer(container);
+
+      // buat thread
+      const { thread_id } = await ThreadsTableTestHelper.addThread({
+        title: 'thread for like',
+        body: 'body of thread',
+        owner: user,
+      });
+
+      // buat komentar
+      const { comment_id } = await CommentsTableTestHelper.addComment({
+        content: 'comment to be liked',
+        thread_id,
+        ownerId: user,
+      });
+
+      // aksi: like komentar
+      const response = await server.inject({
+        method: 'PUT',
+        url: `/threads/${thread_id}/comments/${comment_id}/likes`,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(200);
+      expect(responseJson.status).toEqual('success');
+    });
+
+    it('should response 404 if thread not found', async () => {
+      const accessToken = await ServerTestHelper.getAccessToken();
+      const server = await createServer(container);
+
+      const response = await server.inject({
+        method: 'PUT',
+        url: `/threads/nonexistent-thread/comments/nonexistent-comment/likes`,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(404);
+      expect(responseJson.status).toEqual('fail');
+      expect(responseJson.message).toEqual('threads tidak ditemukan di database');
+    });
+
+    it('should response 404 if comment not found', async () => {
+      const accessToken = await ServerTestHelper.getAccessToken();
+      const user = await ServerTestHelper.decodeAccessToken(accessToken);
+      const server = await createServer(container);
+
+      // buat thread
+      const { thread_id } = await ThreadsTableTestHelper.addThread({
+        title: 'thread for missing comment',
+        body: 'thread body',
+        owner: user,
+      });
+
+      const response = await server.inject({
+        method: 'PUT',
+        url: `/threads/${thread_id}/comments/nonexistent-comment/likes`,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(404);
+      expect(responseJson.status).toEqual('fail');
+      expect(responseJson.message).toEqual('comment tidak ditemukan di database');
+    });
+
+    it('should response 401 when no access token provided', async () => {
+      const server = await createServer(container);
+
+      const response = await server.inject({
+        method: 'PUT',
+        url: `/threads/thread-id/comments/comment-id/likes`,
+      });
+
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(401);
+      expect(responseJson.message).toEqual('Missing authentication');
     });
   });
 });

@@ -9,6 +9,7 @@ describe('DetailComment entity', () => {
       date: '2025-04-22T10:00:00.000Z',
       content: 'ini komentar asli',
       is_delete: false,
+      likeCount: 5,
     };
 
     // Action
@@ -20,6 +21,7 @@ describe('DetailComment entity', () => {
       username: 'dicoding',
       date: '2025-04-22T10:00:00.000Z',
       content: 'ini komentar asli',
+      likeCount: 5,
     });
   });
 
@@ -31,6 +33,7 @@ describe('DetailComment entity', () => {
       date: '2025-04-22T10:01:00.000Z',
       content: 'rahasia',
       is_delete: true,
+      likeCount: 2,
     };
 
     // Action
@@ -42,6 +45,7 @@ describe('DetailComment entity', () => {
       username: 'johndoe',
       date: '2025-04-22T10:01:00.000Z',
       content: '**komentar telah dihapus**',
+      likeCount: 2,
     });
   });
 });

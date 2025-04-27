@@ -6,6 +6,7 @@ const RepliesTableTestHelper = require("../../../../tests/RepliesTableTestHelper
 const createServer = require("../createServer");
 const container = require("../../container");
 const ServerTestHelper = require("../../../../tests/ServerTestHelper");
+const CommentLikesTableTestHelper = require("../../../../tests/CommentLikesTableTestHelper");
 
 describe("/replies endpoint", () => {
   afterAll(async () => {
@@ -13,6 +14,7 @@ describe("/replies endpoint", () => {
   });
 
   afterEach(async () => {
+    await CommentLikesTableTestHelper.cleanTable();
     await RepliesTableTestHelper.cleanTable();
     await ThreadsTableTestHelper.cleanTable();
     await UsersTableTestHelper.cleanTable();

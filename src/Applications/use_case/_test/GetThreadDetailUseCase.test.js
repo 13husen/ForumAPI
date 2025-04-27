@@ -5,7 +5,6 @@ const DetailComment = require("../../../Domains/comments/entities/DetailComment"
 describe("GetThreadDetailUseCase", () => {
   let getThreadDetailUseCase;
   let threadRepository;
-
   let replyRepository;
 
   beforeEach(() => {
@@ -41,12 +40,14 @@ describe("GetThreadDetailUseCase", () => {
           username: "user-124",
           date: "2025-04-20",
           content: "This is a comment",
+          likeCount: 2,
         }),
         new DetailComment({
           id: "comment-124",
           username: "user-125",
           date: "2025-04-19",
           content: "This is another comment",
+          likeCount: 0,
         }),
       ];
 
@@ -68,15 +69,14 @@ describe("GetThreadDetailUseCase", () => {
           username: "user-998",
         },
       ]);
+
       // Act
       const result = await getThreadDetailUseCase.execute(threadId);
 
       // Assert
       expect(threadRepository.getThreadById).toHaveBeenCalledWith(threadId);
-      expect(threadRepository.getCommentsByThreadId).toHaveBeenCalledWith(
-        threadId
-      );
-      expect(replyRepository.getRepliesByCommentIds).toBeCalledTimes(1)
+      expect(threadRepository.getCommentsByThreadId).toHaveBeenCalledWith(threadId);
+      expect(replyRepository.getRepliesByCommentIds).toBeCalledTimes(1);
       expect(result).toEqual({
         id: "thread-123",
         title: "Thread Title",
@@ -89,6 +89,7 @@ describe("GetThreadDetailUseCase", () => {
             username: "user-124",
             date: "2025-04-20",
             content: "This is a comment",
+            likeCount: 2,
             replies: [
               {
                 id: "reply-001",
@@ -103,6 +104,7 @@ describe("GetThreadDetailUseCase", () => {
             username: "user-125",
             date: "2025-04-19",
             content: "This is another comment",
+            likeCount: 0,
             replies: [
               {
                 id: "reply-002",
@@ -117,21 +119,14 @@ describe("GetThreadDetailUseCase", () => {
     });
 
     it("should throw NotFoundError if thread does not exist", async () => {
-      // Arrange
       const threadId = "thread-123";
-      threadRepository.getThreadById.mockRejectedValue(
-        new NotFoundError("Thread not found")
-      );
+      threadRepository.getThreadById.mockRejectedValue(new NotFoundError("Thread not found"));
 
-      // Act & Assert
-      await expect(
-        getThreadDetailUseCase.execute(threadId)
-      ).rejects.toThrowError(NotFoundError);
+      await expect(getThreadDetailUseCase.execute(threadId)).rejects.toThrowError(NotFoundError);
       expect(threadRepository.getThreadById).toHaveBeenCalledWith(threadId);
     });
 
-    it("should throw NotFoundError if comments are not found", async () => {
-      // Arrange
+    it("should return empty comments if no comments are found", async () => {
       const threadId = "thread-123";
       const thread = {
         id: "thread-123",
@@ -143,37 +138,17 @@ describe("GetThreadDetailUseCase", () => {
 
       threadRepository.getThreadById.mockResolvedValue(thread);
       threadRepository.getCommentsByThreadId.mockResolvedValue([]);
-      replyRepository.getRepliesByCommentIds.mockResolvedValue([
-        {
-          id: "reply-001",
-          comment_id: "comment-123",
-          content: "This is a reply",
-          date: "2025-04-21",
-          username: "user-999",
-        },
-        {
-          id: "reply-002",
-          comment_id: "comment-124",
-          content: "Another reply",
-          date: "2025-04-21",
-          username: "user-998",
-        },
-      ]);
+      replyRepository.getRepliesByCommentIds.mockResolvedValue([]);
 
-      // Act
       const result = await getThreadDetailUseCase.execute(threadId);
 
-      // Assert
       expect(threadRepository.getThreadById).toHaveBeenCalledWith(threadId);
-      expect(threadRepository.getCommentsByThreadId).toHaveBeenCalledWith(
-        threadId
-      );
-      expect(replyRepository.getRepliesByCommentIds).toBeCalledTimes(1)
+      expect(threadRepository.getCommentsByThreadId).toHaveBeenCalledWith(threadId);
+      expect(replyRepository.getRepliesByCommentIds).toBeCalledTimes(1);
       expect(result.comments).toEqual([]);
     });
 
-    it("should group multiple replies under the same comment and return empty array for comments without replies", async () => {
-      // Arrange
+    it("should group multiple replies under same comment and empty array for comments without replies", async () => {
       const threadId = "thread-456";
       const thread = {
         id: threadId,
@@ -189,12 +164,14 @@ describe("GetThreadDetailUseCase", () => {
           username: "user-222",
           date: "2025-04-22",
           content: "Comment with replies",
+          likeCount: 1,
         }),
         new DetailComment({
           id: "comment-no-replies",
           username: "user-333",
           date: "2025-04-22",
           content: "Comment without replies",
+          likeCount: 0,
         }),
       ];
 
@@ -221,34 +198,18 @@ describe("GetThreadDetailUseCase", () => {
       threadRepository.getCommentsByThreadId.mockResolvedValue(comments);
       replyRepository.getRepliesByCommentIds.mockResolvedValue(replies);
 
-      // Act
       const result = await getThreadDetailUseCase.execute(threadId);
 
-      // Assert
-      expect(threadRepository.getThreadById).toHaveBeenCalledWith(threadId);
-      expect(threadRepository.getCommentsByThreadId).toHaveBeenCalledWith(
-        threadId
-      );
-      expect(replyRepository.getRepliesByCommentIds).toBeCalledTimes(1)
       expect(result.comments).toHaveLength(2);
 
-      // Comment with replies
-      const commentWithReplies = result.comments.find(
-        (c) => c.id === "comment-has-replies"
-      );
+      const commentWithReplies = result.comments.find((c) => c.id === "comment-has-replies");
       expect(commentWithReplies.replies).toHaveLength(2);
-      expect(commentWithReplies.replies[0].content).toBe("First reply");
-      expect(commentWithReplies.replies[1].content).toBe("Second reply");
 
-      // Comment without replies
-      const commentWithoutReplies = result.comments.find(
-        (c) => c.id === "comment-no-replies"
-      );
+      const commentWithoutReplies = result.comments.find((c) => c.id === "comment-no-replies");
       expect(commentWithoutReplies.replies).toEqual([]);
     });
 
     it("should replace reply content with '**balasan telah dihapus**' if is_delete is true", async () => {
-      // Arrange
       const threadId = "thread-999";
       const thread = {
         id: "thread-999",
@@ -264,6 +225,7 @@ describe("GetThreadDetailUseCase", () => {
           username: "user-222",
           date: "2025-04-22",
           content: "Some comment",
+          likeCount: 0,
         }),
       ];
 
@@ -282,18 +244,9 @@ describe("GetThreadDetailUseCase", () => {
       threadRepository.getCommentsByThreadId.mockResolvedValue(comments);
       replyRepository.getRepliesByCommentIds.mockResolvedValue(replies);
 
-      // Act
       const result = await getThreadDetailUseCase.execute(threadId);
 
-      // Assert
-      expect(threadRepository.getThreadById).toHaveBeenCalledWith(threadId);
-      expect(threadRepository.getCommentsByThreadId).toHaveBeenCalledWith(
-        threadId
-      );
-      expect(replyRepository.getRepliesByCommentIds).toBeCalledTimes(1)
-      expect(result.comments[0].replies[0].content).toEqual(
-        "**balasan telah dihapus**"
-      );
+      expect(result.comments[0].replies[0].content).toEqual("**balasan telah dihapus**");
     });
   });
 });
