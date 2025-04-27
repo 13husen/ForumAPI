@@ -1,14 +1,17 @@
 name: Continuous Integration
+
 on:
   pull_request:
     branches:
       - main
+
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: ["18.x"]
+
     services:
       postgres:
         image: postgres
@@ -23,6 +26,25 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
+
+    env: # <--- Semua ENV GLOBAL di sini
+      CI: true
+      HOST: localhost
+      PORT: 3000
+      PGHOST: ${{ secrets.PGHOST }}
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: ${{ secrets.PGPASSWORD }}
+      PGDATABASE: dicoding_app
+      PGHOST_TEST: ${{ secrets.PGHOST }}
+      PGUSER_TEST: postgres
+      PGDATABASE_TEST: dicoding_app_test
+      PGPASSWORD_TEST: ${{ secrets.PGPASSWORD }}
+      PGPORT_TEST: 5432
+      ACCESS_TOKEN_KEY: ${{ secrets.ACCESS_TOKEN_KEY }}
+      REFRESH_TOKEN_KEY: ${{ secrets.REFRESH_TOKEN_KEY }}
+      ACCESS_TOKEN_AGE: 3000
+
     steps:
       - uses: actions/checkout@v2
 
@@ -38,8 +60,8 @@ jobs:
 
       - name: Wait for PostgreSQL to be ready
         run: |
-          until pg_isready -h localhost -p 5432 -U postgres; do
-            echo "Waiting for postgres..."
+          until pg_isready -h $PGHOST -p 5432 -U $PGUSER; do
+            echo "Waiting for postgres at $PGHOST..."
             sleep 2
           done
 
@@ -52,42 +74,8 @@ jobs:
         run: |
           npm install node-pg-migrate --no-save
           npm run migrate up
-        env:
-          CI: true
-          HOST: localhost
-          PORT: 3000
-          PGHOST: localhost
-          PGPORT: 5432
-          PGUSER: postgres
-          PGPASSWORD: ${{ secrets.PGPASSWORD }}
-          PGDATABASE: dicoding_app
-          PGHOST_TEST: localhost
-          PGUSER_TEST: postgres
-          PGDATABASE_TEST: dicoding_app_test
-          PGPASSWORD_TEST: ${{ secrets.PGPASSWORD }}
-          PGPORT_TEST: 5432
-          ACCESS_TOKEN_KEY: ${{ secrets.ACCESS_TOKEN_KEY }}
-          REFRESH_TOKEN_KEY: ${{ secrets.REFRESH_TOKEN_KEY }}
-          ACCESS_TOKEN_AGE: 3000
 
       - name: migrate and test
         run: |
           npm run migrate:test up
           npm run test
-        env:
-          CI: true
-          HOST: localhost
-          PORT: 3000
-          PGHOST: localhost
-          PGPORT: 5432
-          PGUSER: postgres
-          PGPASSWORD: ${{ secrets.PGPASSWORD }}
-          PGDATABASE: dicoding_app_test
-          PGHOST_TEST: localhost
-          PGUSER_TEST: postgres
-          PGDATABASE_TEST: dicoding_app_test
-          PGPASSWORD_TEST: ${{ secrets.PGPASSWORD }}
-          PGPORT_TEST: 5432
-          ACCESS_TOKEN_KEY: ${{ secrets.ACCESS_TOKEN_KEY }}
-          REFRESH_TOKEN_KEY: ${{ secrets.REFRESH_TOKEN_KEY }}
-          ACCESS_TOKEN_AGE: 3000
