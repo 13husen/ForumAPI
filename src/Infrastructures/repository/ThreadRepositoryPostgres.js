@@ -45,7 +45,7 @@ class ThreadRepositoryPostgres extends ThreadRepository {
 
     const result = await this._pool.query(query);
     if (!result.rowCount) {
-      throw new NotFoundError("Thread tidak ditemukan");
+      throw new NotFoundError("threads tidak ditemukan di database");
     }
     return result.rows[0];
   }
@@ -53,15 +53,21 @@ class ThreadRepositoryPostgres extends ThreadRepository {
   async getCommentsByThreadId(threadId) {
     const query = {
       text: `
-        SELECT c.id, c.content, c.created_at as date, c.is_delete, u.username
+        SELECT c.id, c.content, c.created_at AS date, c.is_delete, u.username,
+        COALESCE(likes.like_count, 0) AS "likeCount"
         FROM comments c
         LEFT JOIN users u ON c.owner = u.id
+        LEFT JOIN (
+          SELECT comment_id, COUNT(*) AS like_count
+          FROM comment_likes
+          GROUP BY comment_id
+        ) likes ON likes.comment_id = c.id
         WHERE c.thread_id = $1
         ORDER BY c.created_at ASC
       `,
       values: [threadId],
     };
-
+  
     const result = await this._pool.query(query);
     return result.rows.map(
       (comment) =>
@@ -71,6 +77,7 @@ class ThreadRepositoryPostgres extends ThreadRepository {
           date: comment.date,
           content: comment.content,
           is_delete: comment.is_delete,
+          likeCount: parseInt(comment.likeCount),
         })
     );
   }

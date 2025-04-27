@@ -107,7 +107,7 @@ describe("ThreadRepositoryPostgres", () => {
       const threadRepository = new ThreadRepositoryPostgres(pool, () => "123");
       await expect(
         threadRepository.getThreadById("thread-not-found")
-      ).rejects.toThrowError(new NotFoundError("Thread tidak ditemukan"));
+      ).rejects.toThrowError(new NotFoundError("threads tidak ditemukan di database"));
     });
   });
   
